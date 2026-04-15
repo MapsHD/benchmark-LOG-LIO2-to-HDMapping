@@ -1,0 +1,9 @@
+[submodule "src/LOG-LIO2"]
+	path = src/LOG-LIO2
+	url = https://github.com/tiev-tongji/LOG-LIO2.git
+[submodule "src/log-lio2-to-hdmapping/src/3rdparty/LASzip"]
+	path = src/log-lio2-to-hdmapping/src/3rdparty/LASzip
+	url = https://github.com/LASzip/LASzip.git
+[submodule "src/livox_ros_driver"]
+	path = src/livox_ros_driver
+	url = https://github.com/Livox-SDK/livox_ros_driver.git
