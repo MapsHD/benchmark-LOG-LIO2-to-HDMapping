@@ -1,6 +1,6 @@
 common:
     lid_topic:  "/velodyne_points"
-    imu_topic:  "/kitti/oxts/imu"
+    imu_topic:  "/imu/data"
     time_sync_en: false
     lidar_time_offset: 0.0
 
@@ -59,9 +59,9 @@ log:
 normal:
     project_name: log_lio
     compute_table: false
-    ring_table_dir: "/config/kitti"
-    compute_normal: true
-    check_normal: true
+    ring_table_dir: "/tmp/kitti_ring_table"
+    compute_normal: false
+    check_normal: false
 
 cov_scale:
     roughness_cov_scale: 0.005

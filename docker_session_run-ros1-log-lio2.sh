@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME='log-lio2_noetic'
+IMAGE_NAME='log-lio2-kitti_noetic'
 TMUX_SESSION='ros1_session'
 
 DATASET_CONTAINER_PATH='/ros_ws/dataset/recorded-log-lio2.bag'

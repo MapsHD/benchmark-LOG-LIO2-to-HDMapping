@@ -4,6 +4,9 @@ SHELL ["/bin/bash", "-c"]
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Workaround: fuse-overlayfs corrupts GPG signatures during layer extraction
+RUN rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl gnupg2 lsb-release software-properties-common \
     build-essential git cmake \
@@ -37,20 +40,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-noetic-catkin \
     ros-noetic-tf \
     ros-noetic-pcl-ros \
+    ros-noetic-cv-bridge \
+    libopencv-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
 
 RUN git clone https://github.com/Livox-SDK/Livox-SDK.git && \
     cd Livox-SDK && \
-    mkdir build && cd build && \
+    rm -rf build && mkdir build && cd build && \
     cmake .. && make -j$(nproc) && make install
 
 WORKDIR /ros_ws
 
 COPY ./src ./src
 
-# Build workspace (livox_ros_driver is built first, then LOG-LIO2 + converter)
+# Fix LOG-LIO2 hardcoded OpenCV paths — let cmake find system OpenCV
+RUN sed -i '/Set(OpenCV_DIR/d' /ros_ws/src/LOG-LIO2/CMakeLists.txt && \
+    sed -i 's/find_package(OpenCV 3.2 QUIET)/find_package(OpenCV REQUIRED)/' /ros_ws/src/LOG-LIO2/CMakeLists.txt && \
+    sed -i 's|#  livox_ros_driver|  livox_ros_driver|' /ros_ws/src/LOG-LIO2/CMakeLists.txt
+
+# Build workspace
 RUN source /opt/ros/noetic/setup.bash && \
     catkin_make
 

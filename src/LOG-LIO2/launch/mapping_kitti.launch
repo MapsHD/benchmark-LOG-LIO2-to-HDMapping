@@ -4,6 +4,7 @@
     <arg name="rviz" default="true"/>
     <arg name="debug" default="false"/>
 
+    <param name="/use_sim_time" value="true"/>
     <rosparam command="load" file="$(find log_lio)/config/kitti.yaml"/>
 
     <arg name="data_path" default="/ros_ws/dataset" />
