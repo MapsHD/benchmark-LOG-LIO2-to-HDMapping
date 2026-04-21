@@ -58,8 +58,8 @@ log:
 
 normal:
     project_name: log_lio
-    compute_table: false
-    ring_table_dir: "/config/mid360"
+    compute_table: true
+    ring_table_dir: "/tmp/mid360_ring_table"
     compute_normal: true
     check_normal: true
 
