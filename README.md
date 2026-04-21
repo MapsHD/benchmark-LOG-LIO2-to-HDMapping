@@ -1,71 +1,46 @@
-# [LOG-LIO2](https://github.com/tiev-tongji/LOG-LIO2) converter to [HDMapping](https://github.com/MapsHD/HDMapping)
+# LOG-LIO2 to HDMapping simlified instruction
 
-## Intended use
+## Step 1 (prepare data)
+Download the dataset `kitti_seq00_ros1.bag` by clicking [link](https://huggingface.co/datasets/kubchud/kitti_to_ros/resolve/main/kitti_seq00_ros1.bag) (it is part of [kitti_seq](https://github.com/Jakubach/kitti_to_ros)).
 
-This small toolset allows to integrate the SLAM solution provided by [LOG-LIO2](https://github.com/tiev-tongji/LOG-LIO2) with [HDMapping](https://github.com/MapsHD/HDMapping).
-This repository contains a ROS 1 workspace that:
-  - submodule to tested revision of LOG-LIO2
-  - a converter that listens to topics advertised from the odometry node and saves data in a format compatible with HDMapping.
+### Extract the dataset
 
-## Example datasets
+File `kitti_seq00_ros1.bag` is an input for further calculations.
+It should be located in `~/hdmapping-benchmark/data`.
 
-- [Bunker DVI Dataset](https://charleshamesse.github.io/bunker-dvi-dataset/) — `reg-1.bag` (Livox MID-360). LOG-LIO2 is FAST-LIO2-derived and supports Livox; a MID-360 config has to be adapted (copy e.g. `newer_college.yaml`, switch preprocess to `lid_type: 1` Livox).
-- [KITTI raw/odometry](https://www.cvlibs.net/datasets/kitti/) — converted `.bag` (`/velodyne_points`, `/kitti/oxts/imu`). Use a Velodyne config (`newer_college.yaml` base) with 64 scan lines.
-
-Upstream ships configs for M2DGR, Newer College, VIRAL.
-
-## Published topics (from LOG-LIO2)
-
-- `/cloud_registered`      — `sensor_msgs/PointCloud2`, per-scan registered cloud in world frame
-- `/cloud_registered_body` — `sensor_msgs/PointCloud2`, per-scan cloud in body frame
-- `/Odometry`              — `nav_msgs/Odometry`
-- `/path`                  — `nav_msgs/Path`
-- `/Laser_map`             — global map
-
-The converter only consumes `/cloud_registered` and `/Odometry`.
-
-## Dependencies
-
+## Step 2 (prepare docker)
 ```shell
-sudo apt install -y nlohmann-json3-dev
+mkdir -p ~/hdmapping-benchmark
+cd ~/hdmapping-benchmark
+git clone https://github.com/MapsHD/benchmark-LOG-LIO2-to-HDMapping.git --recursive
+cd benchmark-LOG-LIO2-to-HDMapping
+git checkout kitti
+docker build -t log-lio2_noetic .
 ```
 
-## Building
-
-Clone the repo:
+## Step 3 (run docker, file 'kitti_seq00_ros1.bag' should be in '~/hdmapping-benchmark/data')
 ```shell
-mkdir -p /test_ws/src
-cd /test_ws/src
-git clone https://github.com/MapsHD/benchmark-log-lio2-to-HDMapping.git --recursive
-cd ..
-catkin_make
+cd ~/hdmapping-benchmark/benchmark-LOG-LIO2-to-HDMapping
+chmod +x docker_session_run-ros1-log-lio2.sh
+cd ~/hdmapping-benchmark/data
+~/hdmapping-benchmark/benchmark-LOG-LIO2-to-HDMapping/docker_session_run-ros1-log-lio2.sh kitti_seq00_ros1.bag .
 ```
 
-## Usage — running SLAM:
+## Step 4 (Open and visualize data)
+Expected data should appear in ~/hdmapping-benchmark/data/output_hdmapping-log-lio2
+Use tool [multi_view_tls_registration_step_2](https://github.com/MapsHD/HDMapping) to open session.json from ~/hdmapping-benchmark/data/output_hdmapping-log-lio2.
 
-In a first terminal start LOG-LIO2:
-```shell
-cd /test_ws/
-source ./devel/setup.sh
-roslaunch log_lio2 mapping_newer_college.launch   # or mapping_m2dgr / mapping_viral
-```
+You should see following data in '~/hdmapping-benchmark/data/output_hdmapping-log-lio2'
 
-In a second terminal record converter-relevant topics:
-```shell
-rosbag record /cloud_registered /Odometry -O recorded.bag
-```
+lio_initial_poses.reg
 
-In a third terminal replay the raw data (adjust topics to your dataset):
-```shell
-rosbag play <raw>.bag --clock
-```
+poses.reg
 
-## Usage — conversion (recorded bag → HDMapping session):
+scan_lio_*.laz
 
-```shell
-cd /test_ws/
-source ./devel/setup.sh
-rosrun log-lio2-to-hdmapping listener <recorded.bag> <output_dir>
-```
+session.json
 
-Output: `scan_lio_*.laz`, `trajectory_lio_*.csv`, `lio_initial_poses.reg`, `poses.reg`, `session.json` — directly loadable in HDMapping.
+trajectory_lio_*.csv
+
+## Contact email
+januszbedkowski@gmail.com
